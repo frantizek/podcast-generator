@@ -1,15 +1,32 @@
 #!/bin/bash
+set -euo pipefail
 
 echo "=================================="
+echo "Podcast Generator"
+echo "=================================="
 
-git config --global user.name "${GITHUB_ACTOR}"
+git config --global user.name "${INPUT_NAME}"
 git config --global user.email "${INPUT_EMAIL}"
 git config --global --add safe.directory /github/workspace
 
-python3 /usr/bin/feed.py
+echo "Running feed generator..."
+python3 /app/feed.py
 
-git add -A && git commit -m "Update Feed"
+echo "Checking for changes..."
 
-git push --set-upstream origin main
+git add -A
 
+if git diff --staged --quiet; then
+    echo "No changes detected."
+    exit 0
+fi
+
+echo "Changes detected. Creating commit..."
+
+git commit -m "Update podcast feed [skip ci]"
+
+echo "Pushing changes..."
+git push
+
+echo "Done."
 echo "=================================="

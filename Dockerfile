@@ -1,14 +1,20 @@
-FROM ubuntu:latest
+FROM python:3.12-slim
 
-RUN apt-get update && apt-get install -y \
-   python3.12 \
-   python3-pip \
-   git
+LABEL org.opencontainers.image.title="Podcast Generator"
+LABEL org.opencontainers.image.description="Generates podcast feeds from YAML files"
 
-RUN pip3 install PyYAML
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY feed.py /usr/bin/feed.py
+RUN pip install --no-cache-dir PyYAML
 
-COPY entrypoint.sh /entrypoint.sh
+WORKDIR /app
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+COPY feed.py /app/feed.py
+COPY entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
